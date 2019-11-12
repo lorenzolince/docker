@@ -1,0 +1,11 @@
+version: '3.2'
+services:
+  oracle-db:
+    image: oracle-db
+    container_name: oracle-db
+    hostname: oracle-db  
+    ports:
+     - "1521:1521"
+    shm_size: 2g
+    environment:
+     - ORACLE_DISABLE_ASYNCH_IO=true
