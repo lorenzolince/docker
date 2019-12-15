@@ -1,0 +1,20 @@
+version: '3.2'
+services:
+  wildfly-app:
+    image: wildfly-app
+    container_name: wildfly-app
+    hostname: wildfly-app  
+    ports:
+     - "${PORT_REMOTE_JMS}:8080"
+     - "9990:9990"
+     - "8787:8787"
+    environment:
+     - DB_HOST=${HOST_IP}
+     - DB_PORT=1521
+     - DB_USER=master
+     - DB_PASSWORD=master
+     - wait_port=1521
+     - QUEUE_REMOTE_DESTINATION_HOST=${HOST_IP}
+     - QUEUE_REMOTE_DESTINATION_PORT=${PORT_REMOTE_JMS}
+    volumes:
+     - ./deployments:/opt/jboss/wildfly/standalone/deployments
