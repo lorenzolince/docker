@@ -1,0 +1,33 @@
+version: '3.0'
+services:
+  spring-boot-admin:
+    image: spring-boot-admin
+    container_name: spring-boot-admin
+    hostname: spring-boot-admin
+    ports:
+     - "8761:8761"
+     - "8888:8888"
+     - "8093:8093"
+    volumes:
+      - /dev/urandom:/dev/random
+      - ./volumes/admin:/apps
+  spring-boot-app:
+    image: spring-boot-app
+    container_name: spring-boot-app
+    hostname: spring-boot-app
+    ports:
+     - "8080:8080"
+     - "8088:8088"
+    environment:
+    - ARG_URL=spring-boot-admin:8888
+    - WAIT_APP=true
+    links:
+     - spring-boot-admin
+    depends_on:
+      - "spring-boot-admin"
+    volumes:
+      - /dev/urandom:/dev/random
+      - ./volumes/apps:/apps
+
+
+
