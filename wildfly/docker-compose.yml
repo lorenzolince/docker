@@ -1,20 +1,22 @@
-version: '3.2'
 services:
   wildfly-app:
     image: wildfly-app
     container_name: wildfly-app
-    hostname: wildfly-app  
     ports:
-     - "${PORT_REMOTE_JMS}:8080"
-     - "9990:9990"
-     - "8787:8787"
-    environment:
-     - DB_HOST=${HOST_IP}
-     - DB_PORT=1521
-     - DB_USER=master
-     - DB_PASSWORD=master
-     - wait_port=1521
-     - QUEUE_REMOTE_DESTINATION_HOST=${HOST_IP}
-     - QUEUE_REMOTE_DESTINATION_PORT=${PORT_REMOTE_JMS}
+      - "8085:8080"
+      - "9990:9990"
     volumes:
-     - ./deployments:/opt/jboss/wildfly/standalone/deployments
+      - ./deployments:/opt/jboss/wildfly/standalone/deployments
+    environment:
+#Oracle Database propeerties
+      - DB_HOST=192.168.1.211
+      - DB_PORT=1521
+      - DB_USER=master
+      - DB_PASSWORD=master
+#SQLServer Database propeerties
+      - DB_MSQL_HOST=
+      - DB_MSQL_PORT=
+      - DB_MSQL_USER=
+      - DB_MSQL_PASSWORD=
+      - DB_MSQL_NAME=
+      - VALID_LICENSE=

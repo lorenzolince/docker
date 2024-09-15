@@ -1,58 +1,36 @@
 /system-property=db.url:add(value="jdbc:oracle:thin:@${env.DB_HOST:127.0.0.1}:${env.DB_PORT:1521}:xe")
 /system-property=db.user:add(value="${env.DB_USER:master}")
 /system-property=db.password:add(value="${env.DB_PASSWORD:master}")
+
+/system-property=db.msql.url:add(value="jdbc:sqlserver://${env.DB_MSQL_HOST:127.0.0.1}:${env.DB_MSQL_PORT:1433};databaseName=${env.DB_MSQL_NAME:TEST}")
+/system-property=db.msql.user:add(value="${env.DB_MSQ_USER:sa}")
+/system-property=db.msql.password:add(value="${env.DB_MSQ_PASSWORD:123456}")
+
+/system-property=valid.license:add(value="${env.VALID_LICENSE:eyJhbGciOiJIUzI1NiJ9}")
+/system-property=logging.level.root:add(value="info")
 # ------------------
 # Drivers
 # ------------------
-/subsystem=datasources/jdbc-driver=oracle:add(driver-name=oracle, driver-module-name=com.oracle.ojdbc7, driver-class-name=oracle.jdbc.OracleDriver, driver-xa-datasource-class-name=oracle.jdbc.xa.client.OracleXADataSource)
+/subsystem=datasources/jdbc-driver=oracle:add(driver-name=oracle, driver-module-name=com.oracle.ojdbc8, driver-class-name=oracle.jdbc.OracleDriver, driver-xa-datasource-class-name=oracle.jdbc.xa.client.OracleXADataSource)
+
+/subsystem=datasources/jdbc-driver=msql:add(driver-name=msql, driver-module-name=com.microsoft.sqlserver, driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver)
 
 # ------------------
 # Datasources
 # ------------------
 data-source add --jndi-name=java:/MASTER_DS --name=MASTER --driver-name=oracle --connection-url=${db.url} \
-  --idle-timeout-minutes=1 --user-name=${db.user} --password=${db.password} --use-ccm="false" --validate-on-match="false" --background-validation="false" \
+  --idle-timeout-minutes=5 --user-name=${db.user} --password=${db.password} --use-ccm="false" --validate-on-match="false" --background-validation="false" \
   --share-prepared-statements="false" --min-pool-size=30 --max-pool-size=60
+  
+data-source add --jndi-name=java:/MSQL_DS --name=MSQL --driver-name=msql --connection-url=${db.msql.url} \
+  --idle-timeout-minutes=5 --user-name=${db.msql.user} --password=${db.msql.password} --use-ccm="false" --validate-on-match="false" --background-validation="false" \
+  --share-prepared-statements="false" --min-pool-size=30 --max-pool-size=60  
 
 # ------------------
 # JMS configuration
 #
+/subsystem=logging/logger=org.jboss.as.ee:add(level=DEBUG)
 
-/subsystem=messaging-activemq/server=default:write-attribute (name=thread-pool-max-size, value=100)
-/subsystem=messaging-activemq/server=default:write-attribute (name=security-enabled, value=false)
-/subsystem=messaging-activemq/server=default:write-attribute (name=message-counter-sample-period, value=60000)
-/subsystem=messaging-activemq/server=default:write-attribute (name=message-counter-max-day-history, value=3)
-
-/subsystem=messaging-activemq/server=default/connection-factory=InVmConnectionFactory:remove
-
-/subsystem=messaging-activemq/server=default/connection-factory \
-=InVmConnectionFactory:add(entries=["java:/XAConnectionFactory"], \
-connectors=["in-vm"], connection-ttl=120000, client-failure-check-period=30000, \
-consumer-window-size=1048576, min-large-message-size=307200, \
-retry-interval=4000, use-global-pools=true, \
-scheduled-thread-pool-max-size=10, thread-pool-max-size=100)
-
-/subsystem=messaging-activemq/server=default/address-setting=#:remove
-
-/subsystem=messaging-activemq/server=default/address-setting=#:add \
-(dead-letter-address=jms.queue.DLQ, expiry-address=jms.queue.ExpiryQueue,\
-redelivery-delay=420000, max-delivery-attempts=10, max-size-bytes=314572800, \
-address-full-policy=PAGE, message-counter-history-day-limit=3)
-
-# ------------------
-# Queues
-# ------------------
-
-jms-queue add --queue-address= jms.queue.transmissionQueue --entries=java:/jms/queue/transmissionQueue,java:/jboss/exported/jms/queue/transmissionQueue
-
-/subsystem=messaging-activemq/server=default/address-setting=#:write-attribute(name=redelivery-delay, value=300000L)
-/subsystem=messaging-activemq/server=default/address-setting=#:write-attribute(name=max-delivery-attempts,value=5)
-
-/subsystem=messaging-activemq/server=default/remote-acceptor=netty:add(socket-binding=messaging)
-/socket-binding-group=standard-sockets/socket-binding=messaging:add(port=8082)
-
-/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=jms-local:add(host="${env.QUEUE_REMOTE_DESTINATION_HOST:127.0.0.1}",port="${env.QUEUE_REMOTE_DESTINATION_PORT:8084}")
-/subsystem=messaging-activemq/server=default/http-connector=jms-local-connector:add(socket-binding="jms-local",endpoint="http-acceptor"
-/subsystem=messaging-activemq/server=default/connection-factory=RemoteConnectionFactory:write-attribute(name="connectors",value=[http-connector,jms-local-connector])
 
 
 :shutdown
