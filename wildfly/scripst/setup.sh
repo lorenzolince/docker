@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Adding WildFly management user..."
-$JBOSS_HOME/bin/add-user.sh -u 'app-manage' -p '123456' -g 'PowerUser,BillingAdmin'
+$JBOSS_HOME/bin/add-user.sh -u 'llince' -p '123456' -g 'PowerUser,BillingAdmin'
+$JBOSS_HOME/bin/add-user.sh -a -u 'user-test' -p '123456.' -g 'guest'
 
 ORACLE_COMMAND="module add --name=com.oracle.ojdbc8 --resources=/opt/oracle/ojdbc8-21.3.0.0.jar:/opt/oracle/xdb6-12.1.0.1.jar --dependencies=javax.api,javax.transaction.api"
 
@@ -9,7 +10,7 @@ MSSQL_COMMAND="module add --name=com.microsoft.sqlserver --resources=/opt/mssql/
 echo "Starting WildFly in admin-only mode..."
 # Start server
 cd $JBOSS_HOME/bin
-./standalone.sh -c standalone.xml --admin-only &
+./standalone.sh -c standalone-full.xml --admin-only &
 
 
 # Wait for server to fully start
